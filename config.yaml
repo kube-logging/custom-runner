@@ -1,0 +1,31 @@
+events:
+  onStart:
+    - exec:
+        command: echo "starting initiated..."
+    - exec:
+        key: shifter
+        command: while true; do date; sleep 1; done
+  onExec:
+    shifter:
+      - exec:
+          key: foo
+          command: echo "foo"
+    foo:
+      - exec:
+          key: bar
+          command: echo "bar"
+    bar:
+      - exec:
+          key: baz
+          command: echo "baz"
+  onFileWrite:
+    foo.bar:
+    - exec:
+        key: info
+        command: echo "foo.bar file written!"
+    - restart:
+        key: shifter
+    /Users/salovasz/work/poc/go-cr/bar.baz:
+    - exec:
+        key: info
+        command: echo "bar.baz file written!"
