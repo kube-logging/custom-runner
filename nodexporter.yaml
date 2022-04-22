@@ -1,0 +1,9 @@
+events:
+  onStart:
+    - exec:
+        key: nodeexporter
+        command: ./bin/node_exporter
+  onFileWrite:
+    nodeexporter.conf:
+    - restart:
+        key: nodeexporter
