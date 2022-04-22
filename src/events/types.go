@@ -4,117 +4,120 @@ import (
 	ptypes "example.com/gocr/src/process/types"
 )
 
-type EventType string
-type EventKind string
+type ITEvent interface {
+	String() string
+}
 
-type EventTK struct {
-	Type EventType
-	Kind EventKind
+type TEvent int
+type TGenericEvent TEvent
+
+func (g TGenericEvent) String() string {
+	return EventNames[g]
+}
+
+type TApiEvent TEvent
+
+func (a TApiEvent) String() string {
+	return EventNames[a]
+}
+
+type TFileEvent TEvent
+
+func (f TFileEvent) String() string {
+	return EventNames[f]
 }
 
 const (
-	EKGeneric EventKind = "generic"
-	EKApi     EventKind = "api"
-	EKFile    EventKind = "file"
+	EOnStart TGenericEvent = iota
+	EOnExit
 
-	ETOnStart EventType = "onStart"
-	ETOnExit  EventType = "onExit"
-
-	ETOnExec       EventType = "onExec"
-	ETOnProcFinish EventType = "onFinish"
-	ETOnProcError  EventType = "onError"
-
-	ETOnFileCreate EventType = "onFileCreate"
-	ETOnFileWrite  EventType = "onFileWrite"
-	ETOnFileRemove EventType = "onFileRemove"
-	ETOnFileRename EventType = "onFileRename"
-	ETOnFileChmod  EventType = "onFileChmod"
+	FirstGenericEvent TGenericEvent = EOnStart
+	LastGenericEvent  TGenericEvent = EOnExit
 )
 
-func ListFileEvents() []EventType {
-	return []EventType{
-		ETOnFileCreate,
-		ETOnFileWrite,
-		ETOnFileRemove,
-		ETOnFileRename,
-		ETOnFileChmod,
-	}
+const (
+	EOnExec TApiEvent = iota + 100
+	EOnFinish
+	EOnError
+
+	FirstApiEvent TApiEvent = EOnExec
+	LastApiEvent  TApiEvent = EOnError
+)
+
+const (
+	EOnFileCreate TFileEvent = iota + 200
+	EOnFileWrite
+	EOnFileRemove
+	EOnFileRename
+	EOnFileChmod
+
+	FirstFileEvent TFileEvent = EOnFileCreate
+	LastFileEvent  TFileEvent = EOnFileChmod
+)
+
+var EventNames = map[ITEvent]string{
+	EOnStart:      "onStart",
+	EOnExit:       "onExit",
+	EOnExec:       "onExec",
+	EOnFinish:     "onFinish",
+	EOnError:      "onError",
+	EOnFileCreate: "onFileCreate",
+	EOnFileWrite:  "onFileWrite",
+	EOnFileRemove: "onFileRemove",
+	EOnFileRename: "onFileRename",
+	EOnFileChmod:  "onFileChmod",
 }
 
-// type TEvent int
-// type TGenericEvent TEvent
-// type TApiEvent TEvent
-// type TFileEvent TEvent
-
-// const (
-// 	EOnStart TGenericEvent = iota
-// 	EOnExit
-
-// 	FirstGenericEvent TGenericEvent = EOnStart
-// 	LastGenericEvent  TGenericEvent = EOnExit
-// )
-// const (
-// 	EOnExec TApiEvent = iota + 100
-// 	EOnFinish
-// 	EOnError
-
-// 	FirstApiEvent TApiEvent = EOnExec
-// 	LastApiEvent  TApiEvent = EOnError
-// )
-// const (
-// 	EOnFileCreate TFileEvent = iota + 200
-// 	EOnFileWrite
-// 	EOnRemove
-// 	EOnRename
-// 	EOnChmod
-
-// 	FirstFileEvent TFileEvent = EOnFileCreate
-// 	LastFileEvent  TFileEvent = EOnChmod
-// )
+func ListFileEvents() []TFileEvent {
+	res := []TFileEvent{}
+	for i := FirstFileEvent; i <= LastFileEvent; i++ {
+		res = append(res, i)
+	}
+	return res
+}
 
 type Pipe chan IEvent
 
 type IEvent interface {
-	Describe() EventTK
 	Args() []interface{}
 }
 
 type EventBase struct {
-	Type EventType
+	Type ITEvent
 }
 
 func OnStart() IEvent {
-	return NewGenericEvent(ETOnStart)
+	return NewGenericEvent(EOnStart)
 }
 
 func OnFinish(key ptypes.Key) IEvent {
-	return NewApiEvent(ETOnProcFinish, key)
+	return NewApiEvent(EOnFinish, key)
 }
 
 func OnError(err error) IEvent {
-	return NewErrorEvent(ETOnProcError, err)
+	return NewErrorEvent(EOnError, err)
 }
 
 func OnExec(key ptypes.Key) IEvent {
-	return NewApiEvent(ETOnExec, key)
+	return NewApiEvent(EOnExec, key)
 }
 
 func OnFileCreate(file string) IEvent {
-	return NewFileEvent(ETOnFileCreate, file)
+	return NewFileEvent(EOnFileCreate, file)
 }
 
 func OnFileWrite(file string) IEvent {
-	return NewFileEvent(ETOnFileWrite, file)
+	return NewFileEvent(EOnFileWrite, file)
 }
 
 func OnFileRemove(file string) IEvent {
-	return NewFileEvent(ETOnFileRemove, file)
+	return NewFileEvent(EOnFileRemove, file)
 }
 
 func OnFileRename(file string) IEvent {
-	return NewFileEvent(ETOnFileRename, file)
+	return NewFileEvent(EOnFileRename, file)
 }
 
 func OnFileChmod(file string) IEvent {
-	return NewFileEvent(ETOnFileChmod, file)
+	return NewFileEvent(EOnFileChmod, file)
 }

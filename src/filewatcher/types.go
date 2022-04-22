@@ -53,7 +53,6 @@ func (f *FileWatcher) listen() {
 			}
 			// fmt.Println(event, ok)
 			if e := f.eventForFile(event); e != nil {
-				//f.eventPipe <- e
 				events.Add(e)
 			}
 		case err, ok := <-f.watcher.Errors:
@@ -61,7 +60,6 @@ func (f *FileWatcher) listen() {
 				f.Stop()
 			}
 			// fmt.Println(err, ok)
-			//f.eventPipe <- events.OnError(err)
 			events.Add(events.OnError(err))
 		}
 	}

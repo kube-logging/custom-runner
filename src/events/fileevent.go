@@ -5,21 +5,13 @@ type FileEvent struct {
 	File string
 }
 
-func (a FileEvent) Describe() EventTK {
-	return EventTK{
-		Kind: EKFile,
-		Type: a.Type,
-	}
-
-}
-
 func (a FileEvent) Args() []interface{} {
 	return []interface{}{
-		string(a.Type),
+		a.Type.String(),
 		a.File,
 	}
 }
 
-func NewFileEvent(eventType EventType, file string) FileEvent {
+func NewFileEvent(eventType ITEvent, file string) FileEvent {
 	return FileEvent{EventBase: EventBase{Type: eventType}, File: file}
 }

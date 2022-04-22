@@ -5,17 +5,10 @@ type ErrorEvent struct {
 	Error error
 }
 
-func (e ErrorEvent) Describe() EventTK {
-	return EventTK{
-		Kind: EKGeneric,
-		Type: e.Type,
-	}
-}
-
 func (e ErrorEvent) Args() []interface{} {
-	return []interface{}{string(e.Type), e.Error}
+	return []interface{}{e.Type.String(), e.Error}
 }
 
-func NewErrorEvent(eventType EventType, err error) ErrorEvent {
+func NewErrorEvent(eventType ITEvent, err error) ErrorEvent {
 	return ErrorEvent{EventBase: EventBase{Type: eventType}, Error: err}
 }

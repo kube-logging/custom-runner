@@ -81,7 +81,7 @@ func (c *Config) CollectFileEvents() []string {
 	}
 
 	for _, evt := range fileEvts {
-		e := evtsMap.GetIn(string(evt))
+		e := evtsMap.GetIn(evt.String())
 		fileMap, ok := e.(Imap)
 		if !ok {
 			continue

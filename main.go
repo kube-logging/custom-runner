@@ -21,7 +21,6 @@ func main() {
 	}
 
 	filesToWatch := conf.CollectFileEvents()
-
 	filewatcher.Start()
 	defer filewatcher.Stop()
 	for _, f := range filesToWatch {
