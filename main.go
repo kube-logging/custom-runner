@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -14,9 +15,15 @@ import (
 	"example.com/gocr/src/process"
 )
 
+var cfg = flag.String("config", "config.yaml", "config file")
+var port = flag.Int("port", 7357, "listening port")
+
 func main() {
+
+	flag.Parse()
+
 	conf := config.New()
-	if err := conf.LoadFile("config.yaml"); err != nil {
+	if err := conf.LoadFile(*cfg); err != nil {
 		panic(err)
 	}
 
@@ -56,5 +63,6 @@ func main() {
 	httpApi.HandleFunc(apiRegx, httpapi.CommandHandler(api, apiRegx))
 
 	events.Add(events.OnStart())
-	http.ListenAndServe(":7357", httpApi)
+	fmt.Printf("listening on port:%v\n", *port)
+	fmt.Println(http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi))
 }
