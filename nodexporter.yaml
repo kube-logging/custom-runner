@@ -2,8 +2,9 @@ events:
   onStart:
     - exec:
         key: nodeexporter
-        command: ./bin/node_exporter
+        command: ./bin/node_exporter --web.listen-address=:9200 --collector.disable-defaults --collector.filesystem
   onFileWrite:
     nodeexporter.conf:
     - restart:
         key: nodeexporter
+ 

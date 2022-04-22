@@ -15,17 +15,36 @@ import (
 	"example.com/gocr/src/process"
 )
 
-var cfg = flag.String("config", "config.yaml", "config file")
+type configExt []string
+
+func (c *configExt) String() string {
+	return fmt.Sprint(*c)
+}
+
+func (c *configExt) Set(value string) error {
+	*c = append(*c, value)
+	return nil
+}
+
+var configArgs configExt
+var cfg = flag.String("cfgfile", "", "config file")
 var port = flag.Int("port", 7357, "listening port")
 
 func main() {
 
+	flag.Var(&configArgs, "config", "config override")
+
 	flag.Parse()
 
 	conf := config.New()
-	if err := conf.LoadFile(*cfg); err != nil {
-		panic(err)
+	if *cfg != "" {
+		if err := conf.LoadFile(*cfg); err != nil {
+			fmt.Printf("no config file found:%v\n", *cfg)
+			return
+		}
 	}
+
+	conf = conf.Override(configArgs)
 
 	filesToWatch := conf.CollectFileEvents()
 	filewatcher.Start()

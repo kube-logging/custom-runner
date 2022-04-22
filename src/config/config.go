@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"example.com/gocr/src/events"
 	"github.com/mitchellh/mapstructure"
@@ -96,4 +97,23 @@ func (c *Config) CollectFileEvents() []string {
 	}
 
 	return res
+}
+
+func (c *Config) Override(configOverrides []string) *Config {
+
+	if c.Imap == nil {
+		c.Imap = Imap{}
+	}
+
+	for _, line := range configOverrides {
+
+		x := strings.Split(line, "=")
+
+		path, value := x[0], strings.Join(x[1:], "=")
+
+		keys := strings.Split(path, ".")
+
+		c.Imap = c.SetIn(keys, value).(Imap)
+	}
+	return c
 }

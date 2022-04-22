@@ -9,7 +9,11 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}"
+            "program": "${fileDirname}",
+            // "args": [
+            //     "-config", 
+            //     "events.onStart.[].exec.command=./bin/node_exporter --web.listen-address=:9200 --collector.disable-defaults --collector.filesystem",
+            // ],
         }
     ]
 }
