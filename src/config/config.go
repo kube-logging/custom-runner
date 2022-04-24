@@ -3,11 +3,10 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
-	"strings"
 
 	"example.com/gocr/src/events"
 	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -22,15 +21,15 @@ type ActionInner struct {
 type Action map[string]ActionInner
 
 type Config struct {
-	Imap
+	Strimap
 }
 
 func New() *Config {
-	return &Config{}
+	return &Config{Strimap: Strimap{}}
 }
 
 func (c *Config) Load(data []byte) error {
-	if err := yaml.Unmarshal(data, &c.Imap); err != nil {
+	if err := yaml.Unmarshal(data, &c.Strimap); err != nil {
 		return err
 	}
 	return nil
@@ -76,44 +75,21 @@ func (c *Config) CollectFileEvents() []string {
 	}
 	fileEvts := events.ListFileEvents()
 
-	evtsMap, ok := evts.(Imap)
+	evtsMap, ok := evts.(Strimap)
 	if !ok {
 		return nil
 	}
 
 	for _, evt := range fileEvts {
 		e := evtsMap.GetIn(evt.String())
-		fileMap, ok := e.(Imap)
+		fileMap, ok := e.(Strimap)
 		if !ok {
 			continue
 		}
 		for k := range fileMap {
-			s, ok := k.(string)
-			if !ok {
-				continue
-			}
-			res = append(res, s)
+			res = append(res, k)
 		}
 	}
 
 	return res
-}
-
-func (c *Config) Override(configOverrides []string) *Config {
-
-	if c.Imap == nil {
-		c.Imap = Imap{}
-	}
-
-	for _, line := range configOverrides {
-
-		x := strings.Split(line, "=")
-
-		path, value := x[0], strings.Join(x[1:], "=")
-
-		keys := strings.Split(path, ".")
-
-		c.Imap = c.SetIn(keys, value).(Imap)
-	}
-	return c
 }

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -15,24 +16,11 @@ import (
 	"example.com/gocr/src/process"
 )
 
-type configExt []string
-
-func (c *configExt) String() string {
-	return fmt.Sprint(*c)
-}
-
-func (c *configExt) Set(value string) error {
-	*c = append(*c, value)
-	return nil
-}
-
-var configArgs configExt
 var cfg = flag.String("cfgfile", "", "config file")
 var port = flag.Int("port", 7357, "listening port")
+var configJson = flag.String("cfgjson", "", "config from json arg")
 
 func main() {
-
-	flag.Var(&configArgs, "config", "config override")
 
 	flag.Parse()
 
@@ -44,7 +32,14 @@ func main() {
 		}
 	}
 
-	conf = conf.Override(configArgs)
+	if *configJson != "" {
+		if err := json.Unmarshal([]byte(*configJson), &conf.Strimap); err != nil {
+			fmt.Printf("unable parse config json:%v", err)
+			return
+		}
+	}
+
+	// fmt.Printf("%#v\n", conf)
 
 	filesToWatch := conf.CollectFileEvents()
 	filewatcher.Start()
