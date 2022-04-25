@@ -19,6 +19,7 @@ import (
 var cfg = flag.String("cfgfile", "", "config file")
 var port = flag.Int("port", 7357, "listening port")
 var configJson = flag.String("cfgjson", "", "config from json arg")
+var startup = flag.String("startup", "", "execute command at startup")
 
 func main() {
 
@@ -75,6 +76,10 @@ func main() {
 	apiRegx := regexp.MustCompile(httpapi.APIRegxPattern)
 
 	httpApi.HandleFunc(apiRegx, httpapi.CommandHandler(api, apiRegx))
+
+	if *startup != "" {
+		api.Exec("startup", *startup)
+	}
 
 	events.Add(events.OnStart())
 	fmt.Printf("listening on port:%v\n", *port)
