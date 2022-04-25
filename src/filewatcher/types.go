@@ -51,7 +51,7 @@ func (f *FileWatcher) listen() {
 			if !ok {
 				f.Stop()
 			}
-			// fmt.Println(event, ok)
+			// info.Println(event, ok)
 			if e := f.eventForFile(event); e != nil {
 				events.Add(e)
 			}
@@ -59,7 +59,7 @@ func (f *FileWatcher) listen() {
 			if !ok {
 				f.Stop()
 			}
-			// fmt.Println(err, ok)
+			// info.Println(err, ok)
 			events.Add(events.OnError(err))
 		}
 	}

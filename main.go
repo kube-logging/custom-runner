@@ -13,6 +13,7 @@ import (
 	"example.com/gocr/src/events"
 	"example.com/gocr/src/filewatcher"
 	"example.com/gocr/src/httpapi"
+	"example.com/gocr/src/info"
 	"example.com/gocr/src/process"
 )
 
@@ -28,19 +29,19 @@ func main() {
 	conf := config.New()
 	if *cfg != "" {
 		if err := conf.LoadFile(*cfg); err != nil {
-			fmt.Printf("no config file found:%v\n", *cfg)
+			info.Printf("no config file found:%v\n", *cfg)
 			return
 		}
 	}
 
 	if *configJson != "" {
 		if err := json.Unmarshal([]byte(*configJson), &conf.Strimap); err != nil {
-			fmt.Printf("unable parse config json:%v", err)
+			info.Printf("unable parse config json:%v", err)
 			return
 		}
 	}
 
-	// fmt.Printf("%#v\n", conf)
+	// info.Printf("%#v\n", conf)
 
 	filesToWatch := conf.CollectFileEvents()
 	filewatcher.Start()
@@ -54,18 +55,18 @@ func main() {
 	go func() {
 		for {
 			event := <-events.DefaultPipe
-			// fmt.Println(event)
+			// info.Println(event)
 			actions, err := conf.ActionsForEvent(event.Args())
 			if err != nil {
 				if config.IsNotFound(err) {
 					continue
 				}
-				fmt.Println("event error", err)
+				info.Println("event error", err)
 			}
 			res := api.RunActions(actions)
 			for _, r := range res {
 				if r.Error != nil {
-					fmt.Println("error:", r)
+					info.Println("error:", r)
 				}
 			}
 		}
@@ -82,6 +83,6 @@ func main() {
 	}
 
 	events.Add(events.OnStart())
-	fmt.Printf("listening on port:%v\n", *port)
-	fmt.Println(http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi))
+	info.Printf("listening on port:%v\n", *port)
+	info.Println(http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi))
 }
