@@ -1,3 +1,4 @@
+// Copyright (c) 2022 Cisco All Rights Reserved.
 package config
 
 type Strimap map[string]interface{}

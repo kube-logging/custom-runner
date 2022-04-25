@@ -1,0 +1,28 @@
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "github.com/mitchellh/mapstructure"
+  revision = "v1.5.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "gopkg.in/yaml.v3"
+  revision = "v3.0.0-20210107192922-496545a6307b"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "golang.org/x/sys"
+  revision = "v0.0.0-20210630005230-0f9fa26af87c"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "github.com/fsnotify/fsnotify"
+  revision = "v1.5.1"
+  type = "gomod"

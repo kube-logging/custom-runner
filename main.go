@@ -1,4 +1,4 @@
-//usr/local/go/bin/go run $0 "$@"; exit $?;
+// Copyright (c) 2022 Cisco All Rights Reserved.
 package main
 
 import (
