@@ -21,6 +21,7 @@ var cfg = flag.String("cfgfile", "", "config file")
 var port = flag.Int("port", 7357, "listening port")
 var configJson = flag.String("cfgjson", "", "config from json arg")
 var startup = flag.String("startup", "", "execute command at startup")
+var debug = flag.Bool("debug", false, "debug logs")
 
 func main() {
 
@@ -41,7 +42,9 @@ func main() {
 		}
 	}
 
-	// info.Printf("%#v\n", conf)
+	if *debug {
+		info.Printf("%#v\n", conf)
+	}
 
 	filesToWatch := conf.CollectFileEvents()
 	filewatcher.Start()
@@ -55,7 +58,9 @@ func main() {
 	go func() {
 		for {
 			event := <-events.DefaultPipe
-			// info.Println(event)
+			if *debug {
+				info.Println(event)
+			}
 			actions, err := conf.ActionsForEvent(event.Args())
 			if err != nil {
 				if config.IsNotFound(err) {
