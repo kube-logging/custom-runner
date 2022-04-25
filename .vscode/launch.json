@@ -15,8 +15,8 @@
             "config.yaml",
             //     "-config", 
             //     "events.onStart.[].exec.command=./bin/node_exporter --web.listen-address=:9200 --collector.disable-defaults --collector.filesystem",
-            "-cfgjson",
-            "{\"events\":{\"onStart\":[{\"exec\":{\"key\":\"foobar\", \"command\":\"echo foo\"}}]}}"
+            // "-cfgjson",
+            // "{\"events\":{\"onStart\":[{\"exec\":{\"key\":\"foobar\", \"command\":\"echo foo\"}}]}}"
             ],
         }
     ]

@@ -69,8 +69,8 @@ func (a *API) exec(key ptypes.Key, args []string) types.ApiResult {
 	}
 
 	return types.ApiResult{
-		Error:     err,
-		Success:   err == nil,
-		Processes: []ptypes.Process{proc},
+		Error:    err,
+		Success:  err == nil,
+		Response: proc, //[]ptypes.Process{proc},
 	}
 }

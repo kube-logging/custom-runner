@@ -21,6 +21,5 @@ func (a *API) kill(key ptypes.Key) types.ApiResult {
 	if err := r.Cmd.Process.Kill(); err != nil {
 		return types.ApiResult{Error: err}
 	}
-	// delete(a.processes.Map(), key)
-	return types.ApiResult{Success: true, Processes: []ptypes.Process{r}}
+	return types.ApiResult{Success: true, Response: []ptypes.Process{r}}
 }

@@ -2,8 +2,6 @@ package types
 
 import (
 	"encoding/json"
-
-	"example.com/gocr/src/process/types"
 )
 
 const (
@@ -15,9 +13,10 @@ const (
 type APICommandProto func(key string, args []byte) ApiResult
 
 type ApiResult struct {
-	Success   bool            `json:"success" yaml:"success"`
-	Error     error           `json:"error,omitempty" yaml:"error,omitempty"`
-	Processes []types.Process `json:"procs,omitempty" yaml:"procs,omitempty"`
+	Success bool  `json:"success" yaml:"success"`
+	Error   error `json:"error,omitempty" yaml:"error,omitempty"`
+	// Processes []types.Process `json:"procs,omitempty" yaml:"procs,omitempty"`
+	Response interface{} `json:"response,omitempty" yaml:"response,omitempty"`
 }
 
 func (a ApiResult) MarshalJSON() ([]byte, error) {

@@ -15,5 +15,5 @@ func (a *API) Get(key ptypes.Key) types.ApiResult {
 	if !ok {
 		return types.ApiResult{Error: fmt.Errorf(types.ErrNoProcFound, key)}
 	}
-	return types.ApiResult{Success: true, Processes: []ptypes.Process{r}}
+	return types.ApiResult{Success: true, Response: []ptypes.Process{r}}
 }
