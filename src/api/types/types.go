@@ -13,9 +13,8 @@ const (
 type APICommandProto func(key string, args []byte) ApiResult
 
 type ApiResult struct {
-	Success bool  `json:"success" yaml:"success"`
-	Error   error `json:"error,omitempty" yaml:"error,omitempty"`
-	// Processes []types.Process `json:"procs,omitempty" yaml:"procs,omitempty"`
+	Success  bool        `json:"success" yaml:"success"`
+	Error    error       `json:"error,omitempty" yaml:"error,omitempty"`
 	Response interface{} `json:"response,omitempty" yaml:"response,omitempty"`
 }
 

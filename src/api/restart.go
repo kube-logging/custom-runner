@@ -20,22 +20,3 @@ func (a *API) Restart(key ptypes.Key) types.ApiResult {
 
 	return types.ApiResult{Error: fmt.Errorf(types.ErrNoProcFound, key)}
 }
-
-// func (a *API) Restart(key ptypes.Key) types.ApiResult {
-// 	a.processes.Lock()
-// 	// defer a.processes.Unlock()
-
-// 	if proc, ok := a.processes.Map()[key]; ok {
-// 		if res := a.kill(key); res.Error != nil {
-// 			a.processes.Unlock()
-// 			return res
-// 		}
-// 		a.processes.Unlock()
-// 		<-proc.Done
-// 		a.processes.Lock()
-// 		defer a.processes.Unlock()
-// 		return a.exec(key, proc.Cmd.Args[1:])
-// 	}
-
-// 	return types.ApiResult{Error: fmt.Errorf(types.ErrNoProcFound, key)}
-// }

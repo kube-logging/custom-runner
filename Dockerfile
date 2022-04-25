@@ -22,5 +22,4 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o runner main.go
 FROM quay.io/prometheus/node-exporter:latest
 WORKDIR /
 COPY --from=builder /workspace/runner .
-# COPY nodexporter.yaml config.yaml
 ENTRYPOINT ["/runner"]

@@ -9,17 +9,11 @@ import (
 )
 
 type FileWatcher struct {
-	// eventPipe events.Pipe
 	watcher *fsnotify.Watcher
 	ctx     context.Context
 	cancel  context.CancelFunc
 	files   map[string]bool
 }
-
-// func New(eventPipe events.Pipe) *FileWatcher {
-// 	ctx, cancel := context.WithCancel(context.Background())
-// 	return &FileWatcher{eventPipe: eventPipe, ctx: ctx, cancel: cancel, files: make(map[string]bool)}
-// }
 
 func New() *FileWatcher {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -72,7 +66,6 @@ func (f *FileWatcher) Add(file string) error {
 }
 
 func (f *FileWatcher) eventForFile(event fsnotify.Event) events.IEvent {
-	// file := filepath.Dir(event.Name) + "/" + filepath.Base(event.Name)
 	file := event.Name
 	if _, ok := f.files[file]; ok {
 		switch event.Op {

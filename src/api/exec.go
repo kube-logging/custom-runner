@@ -45,10 +45,6 @@ func (a *API) exec(key ptypes.Key, args []string) types.ApiResult {
 		a.processes.Lock()
 		defer a.processes.Unlock()
 		delete(a.processes.Map(), key)
-		// a.processes.Update(func(in ptypes.ProcessMap) ptypes.ProcessMap {
-		// 	delete(in, key)
-		// 	return in
-		// })
 		events.Add(events.OnFinish(key))
 		close(done)
 	}()
@@ -58,10 +54,6 @@ func (a *API) exec(key ptypes.Key, args []string) types.ApiResult {
 	proc := ptypes.Process{Key: key, Cmd: cmd, Done: done}
 	if err == nil {
 		a.processes.Map()[key] = proc
-		// a.processes.Update(func(in ptypes.ProcessMap) ptypes.ProcessMap {
-		// 	in[key] = proc
-		// 	return in
-		// })
 
 		events.Add(events.OnExec(key))
 	} else {
@@ -71,6 +63,6 @@ func (a *API) exec(key ptypes.Key, args []string) types.ApiResult {
 	return types.ApiResult{
 		Error:    err,
 		Success:  err == nil,
-		Response: proc, //[]ptypes.Process{proc},
+		Response: proc,
 	}
 }
