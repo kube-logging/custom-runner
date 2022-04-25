@@ -34,6 +34,9 @@ func New(processes ptypes.IProcess) *API {
 		"exit": types.APICommandProto(func(key string, args []byte) types.ApiResult {
 			return api.Exit()
 		}),
+		"config": types.APICommandProto(func(key string, args []byte) types.ApiResult {
+			return api.Config()
+		}),
 	}
 	api.commands = proto
 	return api

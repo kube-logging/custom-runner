@@ -26,7 +26,7 @@ func main() {
 
 	flag.Parse()
 
-	conf := config.New()
+	conf := config.DefaultConfig
 	if *cfg != "" {
 		if err := conf.LoadFile(*cfg); err != nil {
 			info.Printf("no config file found:%v\n", *cfg)
