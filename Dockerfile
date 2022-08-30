@@ -19,7 +19,11 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o runner main.go
 
 # Use distroless as minimal base image to package the runner binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM quay.io/prometheus/node-exporter:latest
+FROM quay.io/prometheus/node-exporter:master
+USER root
+RUN mkdir -p /prometheus/node_exporter/textfile_collector
+ADD buffer-size.sh /prometheus/buffer-size.sh
+RUN chmod 0744 /prometheus/buffer-size.sh
 WORKDIR /
 COPY --from=builder /workspace/runner .
 ENTRYPOINT ["/runner"]
