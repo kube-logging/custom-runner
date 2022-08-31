@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"example.com/gocr/src/api"
 	"example.com/gocr/src/config"
@@ -17,6 +18,21 @@ import (
 	"example.com/gocr/src/process"
 )
 
+type ExecArgs struct {
+	cmds map[string]string
+}
+
+func (e *ExecArgs) Set(value string) error {
+	parts := strings.Split(value, "->")
+	key, val := strings.TrimSpace(parts[0]), strings.TrimSpace(strings.Join(parts[1:], "->"))
+	e.cmds[key] = val
+	return nil
+}
+
+func (e *ExecArgs) String() string {
+	return fmt.Sprintf("%#v", e)
+}
+
 var cfg = flag.String("cfgfile", "", "config file")
 var port = flag.Int("port", 7357, "listening port")
 var configJson = flag.String("cfgjson", "", "config from json arg")
@@ -24,6 +40,8 @@ var startup = flag.String("startup", "", "execute command at startup")
 var debug = flag.Bool("debug", false, "debug logs")
 
 func main() {
+	execes := ExecArgs{cmds: make(map[string]string)}
+	flag.Var(&execes, "exec", "exec command")
 
 	flag.Parse()
 
@@ -85,6 +103,10 @@ func main() {
 
 	if *startup != "" {
 		api.Exec("startup", *startup)
+	}
+
+	for k, c := range execes.cmds {
+		api.Exec(k, c)
 	}
 
 	events.Add(events.OnStart())
