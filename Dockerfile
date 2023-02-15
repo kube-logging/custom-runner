@@ -1,7 +1,7 @@
-# Build the runner binary
-FROM golang:1.17 as builder
+FROM golang:1.17.13 as builder
 
 WORKDIR /workspace
+
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum
@@ -20,6 +20,9 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o runner main.go
 # Use distroless as minimal base image to package the runner binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM scratch
+
 WORKDIR /
+
 COPY --from=builder /workspace/runner .
+
 ENTRYPOINT ["/runner"]
