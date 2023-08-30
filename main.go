@@ -110,6 +110,10 @@ func main() {
 	}
 
 	events.Add(events.OnStart())
-	info.Printf("listening on port:%v\n", *port)
-	info.Println(http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi))
+	if *port != 0 {
+		info.Printf("listening on port:%v\n", *port)
+		info.Println(http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi))
+	} else {
+		info.Printf("listening port disabled\n")
+	}
 }
