@@ -1,5 +1,5 @@
 # Build the runner binary
-FROM golang:1.23 as builder
+FROM golang:1.23.5-alpine3.20@sha256:def59a601e724ddac5139d447e8e9f7d0aeec25db287a9ee1615134bcda266e2 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
