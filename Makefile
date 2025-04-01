@@ -2,8 +2,10 @@
 BIN := ${PWD}/bin
 export PATH := ${BIN}:${PATH}
 
+# renovate: datasource=go depName=github.com/goph/licensei versioning=semver
+LICENSEI_VERSION = 0.9.0
+
 LICENSEI := ${BIN}/licensei
-LICENSEI_VERSION = v0.9.0
 
 ${BIN}:
 	mkdir -p ${BIN}
@@ -20,12 +22,12 @@ license-cache: ${LICENSEI} ## Generate license cache
 .PHONY: check
 check: license-cache license-check
 
-${LICENSEI}: ${LICENSEI}_${LICENSEI_VERSION} | ${BIN}
+${LICENSEI}: ${LICENSEI}_v${LICENSEI_VERSION} | ${BIN}
 	ln -sf $(notdir $<) $@
 
-${LICENSEI}_${LICENSEI_VERSION}: IMPORT_PATH := github.com/goph/licensei/cmd/licensei
-${LICENSEI}_${LICENSEI_VERSION}: VERSION := ${LICENSEI_VERSION}
-${LICENSEI}_${LICENSEI_VERSION}: | ${BIN}
+${LICENSEI}_v${LICENSEI_VERSION}: IMPORT_PATH := github.com/goph/licensei/cmd/licensei
+${LICENSEI}_v${LICENSEI_VERSION}: VERSION := v${LICENSEI_VERSION}
+${LICENSEI}_v${LICENSEI_VERSION}: | ${BIN}
 	${go_install_binary}
 
 define go_install_binary
