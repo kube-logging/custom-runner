@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"example.com/gocr/src/api/types"
+	"github.com/kube-logging/custom-runner/src/api/types"
 )
 
 func (a *API) Exit() types.ApiResult {

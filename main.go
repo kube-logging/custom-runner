@@ -9,13 +9,13 @@ import (
 	"regexp"
 	"strings"
 
-	"example.com/gocr/src/api"
-	"example.com/gocr/src/config"
-	"example.com/gocr/src/events"
-	"example.com/gocr/src/filewatcher"
-	"example.com/gocr/src/httpapi"
-	"example.com/gocr/src/info"
-	"example.com/gocr/src/process"
+	"github.com/kube-logging/custom-runner/src/api"
+	"github.com/kube-logging/custom-runner/src/config"
+	"github.com/kube-logging/custom-runner/src/events"
+	"github.com/kube-logging/custom-runner/src/filewatcher"
+	"github.com/kube-logging/custom-runner/src/httpapi"
+	"github.com/kube-logging/custom-runner/src/info"
+	"github.com/kube-logging/custom-runner/src/process"
 )
 
 type ExecArgs struct {

@@ -6,9 +6,9 @@ import (
 	"os"
 	"os/exec"
 
-	"example.com/gocr/src/api/types"
-	"example.com/gocr/src/events"
-	ptypes "example.com/gocr/src/process/types"
+	"github.com/kube-logging/custom-runner/src/api/types"
+	"github.com/kube-logging/custom-runner/src/events"
+	ptypes "github.com/kube-logging/custom-runner/src/process/types"
 )
 
 func (a *API) Exec(key ptypes.Key, command string) types.ApiResult {

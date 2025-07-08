@@ -4,7 +4,7 @@ package process
 import (
 	"sync"
 
-	"example.com/gocr/src/process/types"
+	"github.com/kube-logging/custom-runner/src/process/types"
 )
 
 type Process struct {

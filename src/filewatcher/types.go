@@ -5,8 +5,8 @@ import (
 	"context"
 	"path/filepath"
 
-	"example.com/gocr/src/events"
 	"github.com/fsnotify/fsnotify"
+	"github.com/kube-logging/custom-runner/src/events"
 )
 
 type FileWatcher struct {

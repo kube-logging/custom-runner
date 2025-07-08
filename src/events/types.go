@@ -2,7 +2,7 @@
 package events
 
 import (
-	ptypes "example.com/gocr/src/process/types"
+	ptypes "github.com/kube-logging/custom-runner/src/process/types"
 )
 
 type ITEvent interface {
