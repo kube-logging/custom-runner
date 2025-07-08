@@ -4,9 +4,9 @@ package api
 import (
 	"fmt"
 
-	"example.com/gocr/src/api/types"
-	"example.com/gocr/src/config"
-	ptypes "example.com/gocr/src/process/types"
+	"github.com/kube-logging/custom-runner/src/api/types"
+	"github.com/kube-logging/custom-runner/src/config"
+	ptypes "github.com/kube-logging/custom-runner/src/process/types"
 )
 
 type API struct {

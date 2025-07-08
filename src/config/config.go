@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"example.com/gocr/src/events"
+	"github.com/kube-logging/custom-runner/src/events"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )

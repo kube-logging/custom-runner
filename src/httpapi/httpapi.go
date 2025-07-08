@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"example.com/gocr/src/api"
-	"example.com/gocr/src/api/types"
+	"github.com/kube-logging/custom-runner/src/api"
+	"github.com/kube-logging/custom-runner/src/api/types"
 )
 
 const (

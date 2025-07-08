@@ -2,8 +2,8 @@
 package api
 
 import (
-	"example.com/gocr/src/api/types"
-	ptypes "example.com/gocr/src/process/types"
+	"github.com/kube-logging/custom-runner/src/api/types"
+	ptypes "github.com/kube-logging/custom-runner/src/process/types"
 )
 
 func (a *API) List() types.ApiResult {

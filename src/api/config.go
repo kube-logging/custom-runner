@@ -2,8 +2,8 @@
 package api
 
 import (
-	"example.com/gocr/src/api/types"
-	"example.com/gocr/src/config"
+	"github.com/kube-logging/custom-runner/src/api/types"
+	"github.com/kube-logging/custom-runner/src/config"
 )
 
 func (a *API) Config() types.ApiResult {
