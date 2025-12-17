@@ -1,6 +1,6 @@
 module github.com/kube-logging/custom-runner
 
-go 1.24.3
+go 1.25.5
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0
@@ -8,4 +8,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require golang.org/x/sys v0.13.0 // indirect
+require golang.org/x/sys v0.39.0 // indirect
