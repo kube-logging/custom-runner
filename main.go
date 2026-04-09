@@ -50,12 +50,14 @@ func (e *ExecArgs) String() string {
 	return fmt.Sprintf("%#v", e)
 }
 
-var cfg = flag.String("cfgfile", "", "config file")
-var port = flag.Int("port", 7357, "listening port")
-var configJson = flag.String("cfgjson", "", "config from json arg")
-var startup = flag.String("startup", "", "execute command at startup")
-var debug = flag.Bool("debug", false, "debug logs")
-var logFormat = flag.String("log-format", "json", "log output format (json or text)")
+var (
+	cfg        = flag.String("cfgfile", "", "config file")
+	port       = flag.Int("port", 7357, "listening port")
+	configJson = flag.String("cfgjson", "", "config from json arg")
+	startup    = flag.String("startup", "", "execute command at startup")
+	debug      = flag.Bool("debug", false, "debug logs")
+	logFormat  = flag.String("log-format", "json", "log output format (json or text)")
+)
 
 func main() {
 	if err := run(); err != nil {

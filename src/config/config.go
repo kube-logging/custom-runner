@@ -16,11 +16,12 @@ package config
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 
-	"github.com/kube-logging/custom-runner/src/events"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
+
+	"github.com/kube-logging/custom-runner/src/events"
 )
 
 const (
@@ -50,7 +51,7 @@ func (c *Config) Load(data []byte) error {
 }
 
 func (c *Config) LoadFile(file string) error {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}

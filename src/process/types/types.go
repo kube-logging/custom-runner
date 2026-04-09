@@ -19,8 +19,10 @@ import (
 	"sync"
 )
 
-type Key = string
-type Waiter chan struct{}
+type (
+	Key    = string
+	Waiter chan struct{}
+)
 
 type ProcessMap = map[Key]Process
 

@@ -17,7 +17,7 @@ package httpapi
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 
@@ -68,12 +68,11 @@ func (h *HTTPAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func handleError(w http.ResponseWriter, errStr string, status int) {
 	w.WriteHeader(status)
-	w.Write([]byte(errStr))
+	w.Write([]byte(errStr)) //nolint:errcheck
 }
 
 func CommandHandler(api *api.API, apiRegx *regexp.Regexp) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		matches := apiRegx.FindStringSubmatch(r.URL.Path)
 
 		apiCommandPos := apiRegx.SubexpIndex(APIRegexPatternKeyApi)
@@ -83,12 +82,12 @@ func CommandHandler(api *api.API, apiRegx *regexp.Regexp) func(w http.ResponseWr
 			apiKeyPos := apiRegx.SubexpIndex(APIRegexPatternKeyKey)
 			apiKey := matches[apiKeyPos]
 
-			body, err := ioutil.ReadAll(r.Body)
-			defer r.Body.Close()
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				handleError(w, ErrBodyRead, http.StatusInternalServerError)
 				return
 			}
+			defer r.Body.Close() //nolint:errcheck
 
 			res := apiCmd(apiKey, body)
 			jsonData, err := json.Marshal(res)
@@ -97,7 +96,7 @@ func CommandHandler(api *api.API, apiRegx *regexp.Regexp) func(w http.ResponseWr
 				return
 			}
 
-			w.Write(jsonData)
+			w.Write(jsonData) //nolint:errcheck
 
 			return
 		}

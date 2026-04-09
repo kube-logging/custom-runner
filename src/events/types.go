@@ -22,8 +22,10 @@ type ITEvent interface {
 	String() string
 }
 
-type TEvent int
-type TGenericEvent TEvent
+type (
+	TEvent        int
+	TGenericEvent TEvent
+)
 
 func (g TGenericEvent) String() string {
 	return EventNames[g]

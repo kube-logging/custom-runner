@@ -27,7 +27,6 @@ func (a *API) List() types.ApiResult {
 
 	for _, v := range a.processes.Map() {
 		procs = append(procs, v)
-
 	}
 
 	return types.ApiResult{Success: true, Response: procs}

@@ -71,5 +71,4 @@ func (s StriArray) GetIn(keys ...interface{}) interface{} {
 		}
 		return v
 	}
-
 }

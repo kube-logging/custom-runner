@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
+
 	"github.com/kube-logging/custom-runner/src/events"
 )
 
