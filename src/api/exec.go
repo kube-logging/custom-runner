@@ -37,11 +37,11 @@ func (a *API) exec(key ptypes.Key, args []string) types.ApiResult {
 		err = cmd.Start()
 		close(wait)
 		if err != nil {
-			events.Add(events.OnError(err))
+			events.Add(events.OnErrorWithKey(key, err))
 			return
 		}
 		if err = cmd.Wait(); err != nil {
-			events.Add(events.OnError(err))
+			events.Add(events.OnErrorWithKey(key, err))
 		}
 		a.processes.Lock()
 		defer a.processes.Unlock()
