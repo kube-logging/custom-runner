@@ -99,6 +99,10 @@ func OnError(err error) IEvent {
 	return NewErrorEvent(EOnError, err)
 }
 
+func OnErrorWithKey(key ptypes.Key, err error) IEvent {
+	return NewErrorEventWithKey(EOnError, key, err)
+}
+
 func OnExec(key ptypes.Key) IEvent {
 	return NewApiEvent(EOnExec, key)
 }
