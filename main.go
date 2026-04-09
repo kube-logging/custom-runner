@@ -18,7 +18,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 
@@ -29,7 +31,6 @@ import (
 	"github.com/kube-logging/custom-runner/src/events"
 	"github.com/kube-logging/custom-runner/src/filewatcher"
 	"github.com/kube-logging/custom-runner/src/httpapi"
-	"github.com/kube-logging/custom-runner/src/info"
 	"github.com/kube-logging/custom-runner/src/metrics"
 	"github.com/kube-logging/custom-runner/src/process"
 )
@@ -54,6 +55,7 @@ var port = flag.Int("port", 7357, "listening port")
 var configJson = flag.String("cfgjson", "", "config from json arg")
 var startup = flag.String("startup", "", "execute command at startup")
 var debug = flag.Bool("debug", false, "debug logs")
+var logFormat = flag.String("log-format", "json", "log output format (json or text)")
 
 func main() {
 	execes := ExecArgs{cmds: make(map[string]string)}
@@ -61,30 +63,44 @@ func main() {
 
 	flag.Parse()
 
+	logLevel := slog.LevelInfo
+	if *debug {
+		logLevel = slog.LevelDebug
+	}
+	setupSlog(*logFormat, logLevel)
+
 	conf := config.DefaultConfig
 	if *cfg != "" {
 		if err := conf.LoadFile(*cfg); err != nil {
-			info.Printf("no config file found:%v\n", *cfg)
+			slog.Error("no config file found", "file", *cfg)
 			return
 		}
 	}
 
 	if *configJson != "" {
 		if err := json.Unmarshal([]byte(*configJson), &conf.Strimap); err != nil {
-			info.Printf("unable parse config json:%v", err)
+			slog.Error("unable to parse config json", "error", err)
 			return
 		}
 	}
 
-	if *debug {
-		info.Printf("%#v\n", conf)
-	}
+	slog.Debug("config loaded", "config", fmt.Sprintf("%#v", conf))
 
 	filesToWatch := conf.CollectFileEvents()
-	filewatcher.Start()
-	defer filewatcher.Stop()
+	if err := filewatcher.Start(); err != nil {
+		slog.Error("failed to start file watcher", "error", err)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := filewatcher.Stop(); err != nil {
+			slog.Error("failed to stop file watcher", "error", err)
+		}
+	}()
 	for _, f := range filesToWatch {
-		filewatcher.Add(f)
+		if err := filewatcher.Add(f); err != nil {
+			slog.Error("failed to watch file", "file", f, "error", err)
+			os.Exit(1)
+		}
 	}
 
 	api := api.New(process.New())
@@ -92,21 +108,19 @@ func main() {
 	go func() {
 		for {
 			event := <-events.DefaultPipe
-			if *debug {
-				info.Println(event)
-			}
+			slog.Debug("event received", "event", event)
 			trackMetrics(event)
 			actions, err := conf.ActionsForEvent(event.Args())
 			if err != nil {
 				if config.IsNotFound(err) {
 					continue
 				}
-				info.Println("event error", err)
+				slog.Error("event error", "error", err)
 			}
 			res := api.RunActions(actions)
 			for _, r := range res {
 				if r.Error != nil {
-					info.Println("error:", r)
+					slog.Error("action error", "result", r)
 				}
 			}
 		}
@@ -128,10 +142,29 @@ func main() {
 
 	events.Add(events.OnStart())
 	if *port != 0 {
-		info.Printf("listening on port:%v\n", *port)
-		info.Println(http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi))
+		slog.Info("listening", "port", *port)
+		if err := http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi); err != nil {
+			slog.Error("failed to start http server", "error", err)
+			os.Exit(1)
+		}
 	} else {
-		info.Printf("listening port disabled\n")
+		slog.Info("listening port disabled")
+	}
+}
+
+func setupSlog(format string, level slog.Level) {
+	logLevel := new(slog.LevelVar)
+	logLevel.Set(level)
+	opts := &slog.HandlerOptions{
+		Level:     logLevel,
+		AddSource: level <= slog.LevelDebug,
+	}
+
+	switch strings.ToLower(format) {
+	case "text":
+		slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, opts)))
+	default:
+		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, opts)))
 	}
 }
 

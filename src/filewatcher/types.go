@@ -16,6 +16,7 @@ package filewatcher
 
 import (
 	"context"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
@@ -46,8 +47,7 @@ func (f *FileWatcher) Start() error {
 
 func (f *FileWatcher) Stop() error {
 	f.cancel()
-	defer f.watcher.Close()
-	return nil
+	return f.watcher.Close()
 }
 
 func (f *FileWatcher) listen() {
@@ -57,17 +57,21 @@ func (f *FileWatcher) listen() {
 			return
 		case event, ok := <-f.watcher.Events:
 			if !ok {
-				f.Stop()
+				if err := f.Stop(); err != nil {
+					slog.Error("error stopping file watcher", "error", err)
+				}
+				return
 			}
-			// info.Println(event, ok)
 			if e := f.eventForFile(event); e != nil {
 				events.Add(e)
 			}
 		case err, ok := <-f.watcher.Errors:
 			if !ok {
-				f.Stop()
+				if stopErr := f.Stop(); stopErr != nil {
+					slog.Error("error stopping file watcher", "error", stopErr)
+				}
+				return
 			}
-			// info.Println(err, ok)
 			events.Add(events.OnError(err))
 		}
 	}

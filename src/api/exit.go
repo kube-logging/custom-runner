@@ -15,6 +15,7 @@
 package api
 
 import (
+	"log/slog"
 	"os"
 	"time"
 
@@ -34,7 +35,9 @@ func (a *API) Exit() types.ApiResult {
 
 	for id := range a.processes.Map() {
 		if r, ok := a.processes.Map()[id]; ok {
-			r.Cmd.Process.Kill()
+			if err := r.Cmd.Process.Kill(); err != nil {
+				slog.Error("failed to kill process", "id", id, "error", err)
+			}
 			delete(a.processes.Map(), id)
 		}
 	}
