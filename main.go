@@ -9,12 +9,15 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/kube-logging/custom-runner/src/api"
 	"github.com/kube-logging/custom-runner/src/config"
 	"github.com/kube-logging/custom-runner/src/events"
 	"github.com/kube-logging/custom-runner/src/filewatcher"
 	"github.com/kube-logging/custom-runner/src/httpapi"
 	"github.com/kube-logging/custom-runner/src/info"
+	"github.com/kube-logging/custom-runner/src/metrics"
 	"github.com/kube-logging/custom-runner/src/process"
 )
 
@@ -79,6 +82,7 @@ func main() {
 			if *debug {
 				info.Println(event)
 			}
+			trackMetrics(event)
 			actions, err := conf.ActionsForEvent(event.Args())
 			if err != nil {
 				if config.IsNotFound(err) {
@@ -96,10 +100,10 @@ func main() {
 	}()
 
 	httpApi := httpapi.New()
+	httpApi.Handler(regexp.MustCompile(`^/metrics$`), promhttp.Handler())
 
-	apiRegx := regexp.MustCompile(httpapi.APIRegxPattern)
-
-	httpApi.HandleFunc(apiRegx, httpapi.CommandHandler(api, apiRegx))
+	apiRegexp := regexp.MustCompile(httpapi.APIRegxPattern)
+	httpApi.HandleFunc(apiRegexp, httpapi.CommandHandler(api, apiRegexp))
 
 	if *startup != "" {
 		api.Exec("startup", *startup)
@@ -115,5 +119,23 @@ func main() {
 		info.Println(http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi))
 	} else {
 		info.Printf("listening port disabled\n")
+	}
+}
+
+func trackMetrics(event events.IEvent) {
+	switch e := event.(type) {
+	case events.ApiEvent:
+		switch e.Type {
+		case events.EOnExec:
+			metrics.RecordExecStart(e.Key)
+		case events.EOnFinish:
+			metrics.RecordExecSuccess(e.Key)
+		}
+	case events.ErrorEvent:
+		if e.Key != "" {
+			metrics.RecordExecError(e.Key)
+		} else {
+			metrics.RecordWatcherError()
+		}
 	}
 }
