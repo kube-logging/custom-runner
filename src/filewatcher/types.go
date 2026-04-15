@@ -1,11 +1,26 @@
-// Copyright (c) 2022 Cisco All Rights Reserved.
+// Copyright © 2022 Cisco Systems, Inc. and/or its affiliates
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package filewatcher
 
 import (
 	"context"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
+
 	"github.com/kube-logging/custom-runner/src/events"
 )
 
@@ -33,8 +48,7 @@ func (f *FileWatcher) Start() error {
 
 func (f *FileWatcher) Stop() error {
 	f.cancel()
-	defer f.watcher.Close()
-	return nil
+	return f.watcher.Close()
 }
 
 func (f *FileWatcher) listen() {
@@ -44,17 +58,21 @@ func (f *FileWatcher) listen() {
 			return
 		case event, ok := <-f.watcher.Events:
 			if !ok {
-				f.Stop()
+				if err := f.Stop(); err != nil {
+					slog.Error("error stopping file watcher", "error", err)
+				}
+				return
 			}
-			// info.Println(event, ok)
 			if e := f.eventForFile(event); e != nil {
 				events.Add(e)
 			}
 		case err, ok := <-f.watcher.Errors:
 			if !ok {
-				f.Stop()
+				if stopErr := f.Stop(); stopErr != nil {
+					slog.Error("error stopping file watcher", "error", stopErr)
+				}
+				return
 			}
-			// info.Println(err, ok)
 			events.Add(events.OnError(err))
 		}
 	}
