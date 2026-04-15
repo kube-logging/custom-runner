@@ -58,6 +58,13 @@ var debug = flag.Bool("debug", false, "debug logs")
 var logFormat = flag.String("log-format", "json", "log output format (json or text)")
 
 func main() {
+	if err := run(); err != nil {
+		slog.Error("fatal", "error", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	execes := ExecArgs{cmds: make(map[string]string)}
 	flag.Var(&execes, "exec", "exec command")
 
@@ -72,15 +79,13 @@ func main() {
 	conf := config.DefaultConfig
 	if *cfg != "" {
 		if err := conf.LoadFile(*cfg); err != nil {
-			slog.Error("no config file found", "file", *cfg)
-			return
+			return fmt.Errorf("failed to load config file %q: %w", *cfg, err)
 		}
 	}
 
 	if *configJson != "" {
 		if err := json.Unmarshal([]byte(*configJson), &conf.Strimap); err != nil {
-			slog.Error("unable to parse config json", "error", err)
-			return
+			return fmt.Errorf("failed to parse config json: %w", err)
 		}
 	}
 
@@ -88,8 +93,7 @@ func main() {
 
 	filesToWatch := conf.CollectFileEvents()
 	if err := filewatcher.Start(); err != nil {
-		slog.Error("failed to start file watcher", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to start file watcher: %w", err)
 	}
 	defer func() {
 		if err := filewatcher.Stop(); err != nil {
@@ -99,11 +103,10 @@ func main() {
 	for _, f := range filesToWatch {
 		if err := filewatcher.Add(f); err != nil {
 			slog.Error("failed to watch file", "file", f, "error", err)
-			os.Exit(1)
 		}
 	}
 
-	api := api.New(process.New())
+	runnerAPI := api.New(process.New())
 
 	go func() {
 		for {
@@ -117,7 +120,7 @@ func main() {
 				}
 				slog.Error("event error", "error", err)
 			}
-			res := api.RunActions(actions)
+			res := runnerAPI.RunActions(actions)
 			for _, r := range res {
 				if r.Error != nil {
 					slog.Error("action error", "result", r)
@@ -130,26 +133,27 @@ func main() {
 	httpApi.Handler(regexp.MustCompile(`^/metrics$`), promhttp.Handler())
 
 	apiRegexp := regexp.MustCompile(httpapi.APIRegxPattern)
-	httpApi.HandleFunc(apiRegexp, httpapi.CommandHandler(api, apiRegexp))
+	httpApi.HandleFunc(apiRegexp, httpapi.CommandHandler(runnerAPI, apiRegexp))
 
 	if *startup != "" {
-		api.Exec("startup", *startup)
+		runnerAPI.Exec("startup", *startup)
 	}
 
 	for k, c := range execes.cmds {
-		api.Exec(k, c)
+		runnerAPI.Exec(k, c)
 	}
 
 	events.Add(events.OnStart())
 	if *port != 0 {
 		slog.Info("listening", "port", *port)
 		if err := http.ListenAndServe(fmt.Sprintf(":%v", *port), httpApi); err != nil {
-			slog.Error("failed to start http server", "error", err)
-			os.Exit(1)
+			return fmt.Errorf("http server: %w", err)
 		}
 	} else {
 		slog.Info("listening port disabled")
 	}
+
+	return nil
 }
 
 func setupSlog(format string, level slog.Level) {
