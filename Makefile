@@ -3,7 +3,7 @@
 ####
 
 # renovate: datasource=github-releases depName=golangci/golangci-lint versioning=semver
-GOLANGCI_LINT_VERSION := 2.10.1
+GOLANGCI_LINT_VERSION := 2.11.4
 
 # renovate: datasource=go depName=github.com/goph/licensei versioning=semver
 LICENSEI_VERSION = 0.9.0
