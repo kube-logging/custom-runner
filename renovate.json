@@ -50,6 +50,15 @@
         "Add build label to PRs which are related to build tools defined in Makefiles.",
         "Group Makefile dependency updates in single PR."
       ]
+    },
+    {
+      "matchDepNames": [
+        "sigstore/cosign-installer"
+      ],
+      "allowedVersions": "3.10.0",
+      "description": [
+        "Pin sigstore/cosign-installer to v3.10.0 (d7543c93d881b35a8faa02e8e3605f69b7a1ce62)."
+      ]
     }
   ],
   "postUpdateOptions": [
