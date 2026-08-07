@@ -1,0 +1,10 @@
+.git/
+.github/
+bin/
+runner
+*.test
+*.prof
+coverage.out
+.licensei.cache
+*.md
+examples/
