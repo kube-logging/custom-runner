@@ -1,0 +1,20 @@
+{
+  "events": {
+    "onFileCreate": {
+      "__CONFDIR__/..data": [
+        {
+          "exec": {
+            "key": "info",
+            "command": "echo CONFIG-SECRET-CHANGED"
+          }
+        },
+        {
+          "exec": {
+            "key": "reload",
+            "command": "echo RELOAD-FIRED"
+          }
+        }
+      ]
+    }
+  }
+}

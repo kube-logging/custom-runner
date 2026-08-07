@@ -1,0 +1,5 @@
+events:
+  onStart:
+    - exec:
+        key: hello
+        command: echo ONSTART-YAML

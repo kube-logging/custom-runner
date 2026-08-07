@@ -1,0 +1,6 @@
+events:
+  onFileWrite:
+    __WATCHDIR__/conf:
+      - exec:
+          key: info
+          command: echo ONFILEWRITE-RAN

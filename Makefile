@@ -8,6 +8,9 @@ GOLANGCI_LINT_VERSION := 2.12.2
 # renovate: datasource=go depName=github.com/goph/licensei versioning=semver
 LICENSEI_VERSION = 0.9.0
 
+# renovate: datasource=github-releases depName=bats-core/bats-core versioning=semver
+BATS_VERSION := 1.14.0
+
 BIN := ${PWD}/bin
 
 export PATH := ${BIN}:${PATH}
@@ -19,12 +22,19 @@ LICENSEI := ${BIN}/licensei
 GOLANGCI_LINT := ${BIN}/golangci-lint
 LINTER_FLAGS := --timeout 10m
 
+BATS := ${BIN}/bats
+RUNNER := ${BIN}/runner
+
 ## =============
 ## ==  Rules  ==
 ## =============
 
 .PHONY: check
-check: license-check lint test
+check: license-check lint test e2e
+
+.PHONY: build
+build: ## Build the runner binary
+	go build -o ${RUNNER} ./cmd
 
 .PHONY: license-check
 license-check: ${LICENSEI} .licensei.cache ## Run license check
@@ -49,7 +59,11 @@ fmt: ## Run go fmt against code
 
 .PHONY: test
 test: ## Run tests
-	go test -v ./...
+	go test -race -v ./...
+
+.PHONY: e2e
+e2e: ${BATS} build ## Run end-to-end tests
+	RUNNER_BIN=${RUNNER} ${BATS} --print-output-on-failure ${E2E_FLAGS} e2e/
 
 .PHONY: tidy
 tidy: ## Tidy Go modules
@@ -78,6 +92,18 @@ ${LICENSEI}_${LICENSEI_VERSION}_${GOVERSION}: IMPORT_PATH := github.com/goph/lic
 ${LICENSEI}_${LICENSEI_VERSION}_${GOVERSION}: VERSION := v${LICENSEI_VERSION}
 ${LICENSEI}_${LICENSEI_VERSION}_${GOVERSION}: | ${BIN}
 	${go_install_binary}
+
+${BATS}: ${BIN}/bats_${BATS_VERSION}/bin/bats | ${BIN}
+	ln -sf bats_${BATS_VERSION}/bin/bats $@
+
+${BIN}/bats_${BATS_VERSION}/bin/bats: | ${BIN}
+	find ${BIN} -maxdepth 1 -type d -name 'bats_*' -exec rm -rf {} +
+	rm -rf ${BIN}/bats-src
+	mkdir -p ${BIN}/bats-src
+	curl -fsSL https://github.com/bats-core/bats-core/archive/refs/tags/v${BATS_VERSION}.tar.gz \
+		| tar -xz -C ${BIN}/bats-src --strip-components=1
+	${BIN}/bats-src/install.sh ${BIN}/bats_${BATS_VERSION}
+	rm -rf ${BIN}/bats-src
 
 .licensei.cache: ${LICENSEI}
 ifndef GITHUB_TOKEN
