@@ -88,3 +88,17 @@ teardown() {
     run curl -sS -o /dev/null -w '%{http_code}' "127.0.0.1:${METRICS_PORT}/list"
     [ "$output" = "404" ]
 }
+
+# Shutdown used to signal children behind Process's back, so every SIGTERM booked
+# the supervised daemon as a crash and fired onError mid-teardown.
+@test "a clean shutdown does not record the daemon as an error" {
+    start_runner --exec 'server -> while true; do sleep 1; done'
+    retry 25 bash -c "[ -n \"\$(curl -sS 127.0.0.1:${PORT}/get/server | jq -r '.response.pid // empty')\" ]"
+
+    kill -TERM "${RUNNER_PID}"
+    wait "${RUNNER_PID}" || true
+    RUNNER_PID=""
+
+    run grep -c 'event reported an error' "${RUNNER_LOG}"
+    [ "$output" = "0" ]
+}
