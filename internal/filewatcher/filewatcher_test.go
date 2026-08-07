@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -31,37 +32,58 @@ func TestSubjects(t *testing.T) {
 		name  string
 		watch []string
 		event string
-		want  []string
+		kind  events.Kind
+		want  []subject
 	}{
 		{
-			name:  "exact match on a plain file",
+			name:  "exact match keeps the native kind",
 			watch: []string{"/etc/app/conf"},
 			event: "/etc/app/conf",
-			want:  []string{"/etc/app/conf"},
+			kind:  events.OnFileWrite,
+			want:  []subject{{"/etc/app/conf", events.OnFileWrite}},
 		},
 		{
 			name:  "unrelated sibling is ignored",
 			watch: []string{"/etc/app/conf"},
 			event: "/etc/app/other",
+			kind:  events.OnFileWrite,
 			want:  nil,
 		},
 		{
-			name:  "a ..data swap fires every watched file in that directory",
+			// kubelet creates ..data; the configured file is never written, so a
+			// raw create would leave onFileWrite silent.
+			name:  "a ..data swap reaches siblings as a write",
 			watch: []string{"/etc/app/conf", "/etc/app/extra"},
 			event: "/etc/app/..data",
-			want:  []string{"/etc/app/conf", "/etc/app/extra"},
+			kind:  events.OnFileCreate,
+			want: []subject{
+				{"/etc/app/conf", events.OnFileWrite},
+				{"/etc/app/extra", events.OnFileWrite},
+			},
 		},
 		{
 			name:  "a ..data swap elsewhere is ignored",
 			watch: []string{"/etc/app/conf"},
 			event: "/etc/other/..data",
+			kind:  events.OnFileCreate,
 			want:  nil,
 		},
 		{
-			name:  "watching ..data directly fires exactly once",
+			name:  "watching ..data directly keeps the native kind",
 			watch: []string{"/etc/app/..data"},
 			event: "/etc/app/..data",
-			want:  []string{"/etc/app/..data"},
+			kind:  events.OnFileCreate,
+			want:  []subject{{"/etc/app/..data", events.OnFileCreate}},
+		},
+		{
+			name:  "..data and a sibling both fire, each with its own kind",
+			watch: []string{"/etc/app/..data", "/etc/app/conf"},
+			event: "/etc/app/..data",
+			kind:  events.OnFileCreate,
+			want: []subject{
+				{"/etc/app/..data", events.OnFileCreate},
+				{"/etc/app/conf", events.OnFileWrite},
+			},
 		},
 	}
 
@@ -74,13 +96,13 @@ func TestSubjects(t *testing.T) {
 				w.byDir[dir] = append(w.byDir[dir], p)
 			}
 
-			got := w.subjects(tc.event)
-			slices.Sort(got)
+			got := w.subjects(tc.event, tc.kind)
+			slices.SortFunc(got, func(a, b subject) int { return strings.Compare(a.path, b.path) })
 			want := slices.Clone(tc.want)
-			slices.Sort(want)
+			slices.SortFunc(want, func(a, b subject) int { return strings.Compare(a.path, b.path) })
 
 			if !slices.Equal(got, want) {
-				t.Errorf("subjects(%q) = %v, want %v", tc.event, got, want)
+				t.Errorf("subjects(%q, %q) = %v, want %v", tc.event, tc.kind, got, want)
 			}
 		})
 	}
@@ -128,6 +150,9 @@ func TestKubernetesConfigMapSwapPublishes(t *testing.T) {
 	case e := <-got:
 		if e.Subject != conf {
 			t.Errorf("event subject = %q, want %q", e.Subject, conf)
+		}
+		if e.Kind != events.OnFileWrite {
+			t.Errorf("event kind = %q, want %q — onFileWrite on the mounted path would never fire", e.Kind, events.OnFileWrite)
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("no event published for a ConfigMap swap; the watched file would never reload")

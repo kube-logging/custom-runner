@@ -89,8 +89,8 @@ func (w *Watcher) Run(ctx context.Context) {
 			if !ok {
 				continue
 			}
-			for _, path := range w.subjects(event.Name) {
-				w.bus.Publish(events.New(kind, path))
+			for _, subject := range w.subjects(event.Name, kind) {
+				w.bus.Publish(events.New(subject.kind, subject.path))
 			}
 
 		case err, open := <-w.watcher.Errors:
@@ -103,25 +103,33 @@ func (w *Watcher) Run(ctx context.Context) {
 	}
 }
 
+type subject struct {
+	path string
+	kind events.Kind
+}
+
 // subjects maps a filesystem event onto the configured paths it should fire for.
-func (w *Watcher) subjects(name string) []string {
+//
+// A directly watched path keeps the native kind. A ..data swap is reported to its
+// siblings as a write: kubelet only replaces that symlink, so the filesystem never
+// records a create or write against the user-visible name, and reporting the raw
+// kind would leave the obvious `onFileWrite: /mount/conf` silent forever.
+func (w *Watcher) subjects(name string, kind events.Kind) []subject {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 
+	var out []subject
 	if _, ok := w.paths[name]; ok {
-		return []string{name}
+		out = append(out, subject{path: name, kind: kind})
 	}
 
 	if filepath.Base(name) != kubeDataDir {
-		return nil
+		return out
 	}
 
-	// Excluded if configured directly: the exact match above already fired it.
-	siblings := w.byDir[filepath.Dir(name)]
-	out := make([]string, 0, len(siblings))
-	for _, path := range siblings {
+	for _, path := range w.byDir[filepath.Dir(name)] {
 		if path != name {
-			out = append(out, path)
+			out = append(out, subject{path: path, kind: events.OnFileWrite})
 		}
 	}
 
