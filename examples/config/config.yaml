@@ -25,7 +25,7 @@ events:
         command: echo "foo.bar file written!"
     - restart:
         key: shifter
-    /Users/salovasz/work/poc/go-cr/bar.baz:
+    bar.baz:
     - exec:
         key: info
         command: echo "bar.baz file written!"
