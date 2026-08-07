@@ -9,10 +9,15 @@ watch a mounted config file, and restart or signal the main process when it chan
 
 ## Running
 
+Commands run through `sh -c`, so trying this out needs a shell variant, and the
+command API binds loopback inside the container — publish it explicitly to reach
+it from the host:
+
 ```sh
-docker run --rm -p 7357:7357 \
+docker build -f Dockerfile.alpine -t custom-runner:alpine .
+docker run --rm -p 127.0.0.1:7357:7357 \
   -v "$PWD/examples/config/config.yaml:/config.yaml" \
-  ghcr.io/kube-logging/custom-runner:latest -cfgfile /config.yaml
+  custom-runner:alpine -cfgfile /config.yaml -address 0.0.0.0
 ```
 
 Image variants — pick the base that has the tools your commands need:
