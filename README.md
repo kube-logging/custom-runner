@@ -89,8 +89,13 @@ Process-lifecycle events are keyed by process key; file events are keyed by watc
 
 Watches are placed on the **parent directory** of each configured path. Kubernetes
 updates a mounted ConfigMap or Secret by swapping the `..data` symlink and never
-touches the user-visible filenames, so a `..data` swap fires every path configured
-in that directory. Watching `/your/mount/conf` and `/your/mount/..data` both work.
+touches the user-visible filenames, so a `..data` swap also fires every other path
+configured in that directory — as **`onFileWrite`**, since the content behind those
+paths changed even though nothing wrote to them.
+
+So `onFileWrite: /your/mount/conf` is the right way to react to a ConfigMap update.
+Watching `/your/mount/..data` directly still reports the raw event (`onFileCreate`
+for the swap), which is what logging-operator does.
 
 ### Actions
 

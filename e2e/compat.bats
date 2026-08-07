@@ -94,3 +94,17 @@ teardown() {
     run grep -c '"address":"0.0.0.0:'"${METRICS_PORT}" "${RUNNER_LOG}"
     [ "$output" -ge 1 ]
 }
+
+# kubelet only swaps ..data, so the mounted filename is never written. Watching it
+# with the obvious onFileWrite must still fire.
+@test "kubernetes: a ConfigMap swap fires onFileWrite on the mounted filename" {
+    WATCHDIR="${BATS_TEST_TMPDIR}/mount"
+    mkdir -p "$WATCHDIR"
+    start_runner -cfgfile "$(fixture configmap-write.yaml)"
+
+    mkdir -p "${WATCHDIR}/..2026_01_01"
+    echo v2 >"${WATCHDIR}/..2026_01_01/app.conf"
+    ln -sfn '..2026_01_01' "${WATCHDIR}/..data"
+
+    wait_for_log 'CONFIGMAP-RELOADED'
+}
