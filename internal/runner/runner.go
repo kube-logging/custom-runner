@@ -114,12 +114,24 @@ func Run(ctx context.Context, opts Options) error {
 	ready.SetStarted(false)
 	stopServers(servers)
 	runExitActions(runnerAPI, cfg)
+	killRemaining(table)
 	killChildren()
 	awaitReaped(table)
 	bus.Close()
 	<-consumed
 
 	return err
+}
+
+// killRemaining terminates children through the table so the reaper knows the
+// exits were deliberate. Canceling procCtx alone signals them behind Process's
+// back, booking every shutdown as a crash and firing onError mid-teardown.
+func killRemaining(table *process.Table) {
+	for _, proc := range table.List() {
+		if err := proc.Kill(); err != nil && !errors.Is(err, process.ErrNotStarted) {
+			slog.Error("failed to kill process", "key", proc.Key, "error", err)
+		}
+	}
 }
 
 // awaitReaped waits for the killed children to be collected. Exiting first leaves
@@ -250,9 +262,14 @@ func runExitActions(a *api.API, cfg *config.Config) {
 	}
 
 	var spawned []*process.Process
-	for _, res := range a.RunActions(actions) {
+	for i, res := range a.RunActions(actions) {
 		if res.Error != "" {
 			slog.Error("onExit action failed", "error", res.Error)
+			continue
+		}
+		// get also answers with a process; waiting on it would stall shutdown on
+		// the very daemon killChildren has yet to stop.
+		if !actions[i].StartsProcess() {
 			continue
 		}
 		if proc, ok := res.Response.(*process.Process); ok {
