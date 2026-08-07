@@ -1,8 +1,11 @@
-# Build the runner binary
-FROM golang:1.26.5-alpine3.23@sha256:622e56dbc11a8cfe87cafa2331e9a201877271cbff918af53d3be315f3da88cc AS builder
+FROM --platform=$BUILDPLATFORM golang:1.26.5-alpine3.23@sha256:622e56dbc11a8cfe87cafa2331e9a201877271cbff918af53d3be315f3da88cc AS builder
 
-WORKDIR /workspace
-# Copy the Go Modules manifests
+ARG TARGETOS
+ARG TARGETARCH
+ARG GO_BUILD_FLAGS
+
+WORKDIR /usr/local/src/custom-runner
+
 COPY go.mod go.mod
 COPY go.sum go.sum
 
@@ -10,16 +13,13 @@ COPY go.sum go.sum
 # and so that source changes don't invalidate our downloaded layer
 RUN go mod download
 
-# Copy the go source
-COPY main.go main.go
-COPY src/ src/
+COPY cmd/ cmd/
+COPY internal/ internal/
 
-# Build
-RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o runner main.go
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build $GO_BUILD_FLAGS -o /usr/local/bin/runner ./cmd
 
-# Use distroless as minimal base image to package the runner binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM quay.io/prometheus/node-exporter:latest
-WORKDIR /
-COPY --from=builder /workspace/runner .
+FROM quay.io/prometheus/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
+
+COPY --from=builder /usr/local/bin/runner /runner
+
 ENTRYPOINT ["/runner"]
