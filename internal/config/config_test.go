@@ -176,3 +176,43 @@ func TestLoadRejectsEmptyAction(t *testing.T) {
 		t.Fatal("expected an action with no verb to be rejected")
 	}
 }
+
+// The strict loader used to check only that an action had one key, so a
+// misspelled verb loaded fine and failed later when the event fired.
+func TestLoadRejectsUnknownActionVerb(t *testing.T) {
+	err := New().LoadYAML([]byte("events:\n  onStart:\n    - exce:\n        key: a\n"))
+
+	if err == nil {
+		t.Fatal("expected a misspelled action verb to be rejected at load")
+	}
+}
+
+func TestLoadAcceptsEveryRegisteredVerb(t *testing.T) {
+	for _, verb := range []string{
+		ActionExec, ActionKill, ActionRestart,
+		ActionGet, ActionList, ActionExit, ActionConfig,
+	} {
+		if err := New().LoadYAML([]byte("events:\n  onStart:\n    - " + verb + ":\n        key: a\n")); err != nil {
+			t.Errorf("verb %q rejected: %v", verb, err)
+		}
+	}
+}
+
+func TestLoadJSONRejectsTrailingContent(t *testing.T) {
+	if err := New().LoadJSON([]byte(`{"events":{}} {"events":{}}`)); err == nil {
+		t.Fatal("expected trailing JSON to be rejected, as YAML's second document is")
+	}
+}
+
+func TestStartsProcess(t *testing.T) {
+	testCases := map[string]bool{
+		ActionExec: true, ActionRestart: true,
+		ActionGet: false, ActionKill: false, ActionList: false,
+	}
+
+	for verb, want := range testCases {
+		if got := (Action{verb: Spec{}}).StartsProcess(); got != want {
+			t.Errorf("%q.StartsProcess() = %v, want %v", verb, got, want)
+		}
+	}
+}

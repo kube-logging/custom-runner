@@ -55,13 +55,13 @@ func New(procCtx context.Context, shutdown context.CancelFunc, table *process.Ta
 	a := &API{procCtx: procCtx, shutdown: shutdown, table: table, bus: bus, cfg: cfg}
 
 	a.commands = map[string]Command{
-		"exec":    func(key string, args []byte) Result { return a.Exec(key, string(args)) },
-		"kill":    func(key string, _ []byte) Result { return a.Kill(key) },
-		"restart": func(key string, _ []byte) Result { return a.Restart(key) },
-		"get":     func(key string, _ []byte) Result { return a.Get(key) },
-		"list":    func(string, []byte) Result { return a.List() },
-		"exit":    func(string, []byte) Result { return a.Exit() },
-		"config":  func(string, []byte) Result { return a.Config() },
+		config.ActionExec:    func(key string, args []byte) Result { return a.Exec(key, string(args)) },
+		config.ActionKill:    func(key string, _ []byte) Result { return a.Kill(key) },
+		config.ActionRestart: func(key string, _ []byte) Result { return a.Restart(key) },
+		config.ActionGet:     func(key string, _ []byte) Result { return a.Get(key) },
+		config.ActionList:    func(string, []byte) Result { return a.List() },
+		config.ActionExit:    func(string, []byte) Result { return a.Exit() },
+		config.ActionConfig:  func(string, []byte) Result { return a.Config() },
 	}
 
 	return a

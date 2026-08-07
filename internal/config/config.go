@@ -35,9 +35,34 @@ type Spec struct {
 	Command string `json:"command,omitempty" yaml:"command,omitempty"`
 }
 
+// Action verbs, also used to key the API command table.
+const (
+	ActionExec    = "exec"
+	ActionKill    = "kill"
+	ActionRestart = "restart"
+	ActionGet     = "get"
+	ActionList    = "list"
+	ActionExit    = "exit"
+	ActionConfig  = "config"
+)
+
+var actionVerbs = map[string]struct{}{
+	ActionExec: {}, ActionKill: {}, ActionRestart: {},
+	ActionGet: {}, ActionList: {}, ActionExit: {}, ActionConfig: {},
+}
+
 // Action maps an API command name ("exec", "restart", …) to its payload. A well
 // formed action carries exactly one entry.
 type Action map[string]Spec
+
+// StartsProcess reports whether the action brings a new process into existence,
+// so callers can tell it apart from a read like get.
+func (a Action) StartsProcess() bool {
+	_, exec := a[ActionExec]
+	_, restart := a[ActionRestart]
+
+	return exec || restart
+}
 
 // Events binds each event kind to the actions it triggers. List-valued kinds fire
 // unconditionally; map-valued kinds are keyed by process key or watched path.
@@ -106,6 +131,10 @@ func (c *Config) LoadJSON(data []byte) error {
 		return fmt.Errorf("parse json config: %w", err)
 	}
 
+	if dec.More() {
+		return errors.New("parse json config: unexpected trailing content")
+	}
+
 	return c.validate()
 }
 
@@ -140,6 +169,11 @@ func validateActions(kind, subject string, actions []Action) error {
 	for i, action := range actions {
 		if len(action) != 1 {
 			return fmt.Errorf("events.%s[%d]: an action must carry exactly one command, got %d", where, i, len(action))
+		}
+		for verb := range action {
+			if _, ok := actionVerbs[verb]; !ok {
+				return fmt.Errorf("events.%s[%d]: unknown command %q", where, i, verb)
+			}
 		}
 	}
 

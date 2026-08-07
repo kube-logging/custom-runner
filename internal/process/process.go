@@ -88,9 +88,12 @@ func (p *Process) Kill() error {
 	if p.exited {
 		return nil
 	}
+	if err := KillGroup(p.Cmd); err != nil {
+		return err
+	}
 	p.killed = true
 
-	return KillGroup(p.Cmd)
+	return nil
 }
 
 // Killed reports whether termination was requested rather than a crash.
