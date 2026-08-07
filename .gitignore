@@ -1,4 +1,18 @@
-.vscode/*
-bin/*
-.idea
-.licensei.cache
+# Binaries
+/runner
+/bin/
+
+# Test & coverage output
+*.test
+*.prof
+coverage.out
+
+# Licensei cache
+/.licensei.cache
+
+# Editors / IDEs
+.idea/
+.vscode/
+
+# OS
+.DS_Store

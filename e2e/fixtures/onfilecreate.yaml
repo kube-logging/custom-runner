@@ -1,0 +1,6 @@
+events:
+  onFileCreate:
+    __WATCHDIR__/trigger:
+      - exec:
+          key: info
+          command: echo ONFILECREATE-RAN

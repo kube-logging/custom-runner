@@ -1,0 +1,9 @@
+events:
+  onStart:
+    - exec:
+        key: server
+        command: while true; do sleep 1; done
+  onExit:
+    - exec:
+        key: farewell
+        command: echo ONEXIT-RAN

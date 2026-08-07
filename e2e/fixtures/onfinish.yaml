@@ -1,0 +1,10 @@
+events:
+  onStart:
+    - exec:
+        key: quick
+        command: echo QUICK-RAN
+  onFinish:
+    quick:
+      - exec:
+          key: after
+          command: echo ONFINISH-RAN

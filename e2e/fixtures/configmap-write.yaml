@@ -1,0 +1,6 @@
+events:
+  onFileWrite:
+    __WATCHDIR__/app.conf:
+      - exec:
+          key: reload
+          command: echo CONFIGMAP-RELOADED

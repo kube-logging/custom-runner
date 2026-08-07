@@ -1,0 +1,10 @@
+events:
+  onStart:
+    - exec:
+        key: first
+        command: echo CHAIN-FIRST
+  onExec:
+    first:
+      - exec:
+          key: second
+          command: echo CHAIN-SECOND
